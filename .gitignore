@@ -17,6 +17,10 @@
 .env.*
 !.env.example
 
+# .NET Secrets (NEVER commit these!)
+**/appsettings.Development.json
+**/appsettings.*.Local.json
+
 # Logs
 *.log
 
