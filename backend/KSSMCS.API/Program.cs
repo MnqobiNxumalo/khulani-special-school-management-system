@@ -6,6 +6,7 @@ using Microsoft.OpenApi.Models;
 using KSSMCS.API.Data;
 using KSSMCS.API.Helpers;
 using KSSMCS.API.Services;
+using KSSMCS.API.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,6 +53,9 @@ builder.Services.AddAuthorization();
 // ============================================================
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+// Learner Management
+builder.Services.AddScoped<ILearnerRepository, LearnerRepository>();
+builder.Services.AddScoped<ILearnerService, LearnerService>();
 
 // ============================================================
 // 5. Controllers
