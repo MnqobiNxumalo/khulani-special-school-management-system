@@ -1,20 +1,105 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using KSSMCS.API.Data;
+using KSSMCS.API.Helpers;
+using KSSMCS.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Add EF Core with PostgreSQL (Supabase)
+// ============================================================
+// 1. Database (EF Core + PostgreSQL/Supabase)
+// ============================================================
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// 2. Add Controllers
+// ============================================================
+// 2. JWT Settings
+// ============================================================
+var jwtSettings = new JwtSettings();
+builder.Configuration.GetSection("Jwt").Bind(jwtSettings);
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
+
+// ============================================================
+// 3. JWT Authentication
+// ============================================================
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtSettings.Issuer,
+        ValidAudience = jwtSettings.Audience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Secret)),
+        ClockSkew = TimeSpan.Zero
+    };
+});
+
+builder.Services.AddAuthorization();
+
+// ============================================================
+// 4. Dependency Injection
+// ============================================================
+builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+// ============================================================
+// 5. Controllers
+// ============================================================
 builder.Services.AddControllers();
 
-// 3. Add Swagger (for testing API in browser)
+// ============================================================
+// 6. Swagger (with JWT support)
+// ============================================================
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "KSSMCS API",
+        Version = "v1",
+        Description = "Khulani Special School Management and Communication System API"
+    });
 
-// 4. Add CORS (allow React frontend to talk to API)
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter your JWT token (without 'Bearer ' prefix)."
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
+
+// ============================================================
+// 7. CORS
+// ============================================================
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
@@ -30,7 +115,9 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// ============================================================
+// 8. Middleware Pipeline
+// ============================================================
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -38,14 +125,16 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseCors("AllowFrontend");
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
-// Health check endpoint to verify DB connection
+// ============================================================
+// 9. Health check
+// ============================================================
 app.MapGet("/api/health", async (AppDbContext db) =>
 {
     try
