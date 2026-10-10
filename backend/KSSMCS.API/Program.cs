@@ -56,6 +56,9 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 // Learner Management
 builder.Services.AddScoped<ILearnerRepository, LearnerRepository>();
 builder.Services.AddScoped<ILearnerService, LearnerService>();
+// Health Incident Management
+builder.Services.AddScoped<IHealthIncidentRepository, HealthIncidentRepository>();
+builder.Services.AddScoped<IHealthIncidentService, HealthIncidentService>();
 
 // ============================================================
 // 5. Controllers
