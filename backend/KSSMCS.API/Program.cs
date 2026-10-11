@@ -65,6 +65,9 @@ builder.Services.AddScoped<IAttendanceService, AttendanceService>();
 // Message Management
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<IMessageService, MessageService>();
+// Visitor Management
+builder.Services.AddScoped<IVisitorRepository, VisitorRepository>();
+builder.Services.AddScoped<IVisitorService, VisitorService>();
 // ============================================================
 // 5. Controllers
 // ============================================================
