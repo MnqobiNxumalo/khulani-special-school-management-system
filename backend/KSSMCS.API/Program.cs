@@ -62,7 +62,9 @@ builder.Services.AddScoped<IHealthIncidentService, HealthIncidentService>();
 // Attendance Management
 builder.Services.AddScoped<IAttendanceRepository, AttendanceRepository>();
 builder.Services.AddScoped<IAttendanceService, AttendanceService>();
-
+// Message Management
+builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+builder.Services.AddScoped<IMessageService, MessageService>();
 // ============================================================
 // 5. Controllers
 // ============================================================
