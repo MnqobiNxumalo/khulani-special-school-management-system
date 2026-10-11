@@ -7,6 +7,8 @@ using KSSMCS.API.Data;
 using KSSMCS.API.Helpers;
 using KSSMCS.API.Services;
 using KSSMCS.API.Repositories;
+using KSSMCS.API.Middleware;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -139,6 +141,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+
+app.UseMiddleware<ExceptionMiddleware>();
 app.UseHttpsRedirection();
 app.UseCors("AllowFrontend");
 
