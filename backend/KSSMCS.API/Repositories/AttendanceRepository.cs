@@ -39,42 +39,43 @@ public class AttendanceRepository : IAttendanceRepository
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<Attendance>> GetByDateAsync(DateTime date)
-    {
-        var start = date.Date;
-        var end = start.AddDays(1);
+   public async Task<IEnumerable<Attendance>> GetByDateAsync(DateTime date)
+{
+    // Force UTC and use date range to avoid timezone ambiguity
+    var start = DateTime.SpecifyKind(date.Date, DateTimeKind.Utc);
+    var end = start.AddDays(1);
 
-        return await _db.Attendances
-            .Include(a => a.Learner)
-            .Include(a => a.RecordedBy)
-            .Where(a => a.Date >= start && a.Date < end)
-            .OrderBy(a => a.Learner!.LastName)
-            .ToListAsync();
-    }
+    return await _db.Attendances
+        .Include(a => a.Learner)
+        .Include(a => a.RecordedBy)
+        .Where(a => a.Date >= start && a.Date < end)
+        .OrderBy(a => a.Learner!.LastName)
+        .ToListAsync();
+}
 
-    public async Task<IEnumerable<Attendance>> GetByDateRangeAsync(DateTime from, DateTime to)
-    {
-        var start = from.Date;
-        var end = to.Date.AddDays(1);
+public async Task<IEnumerable<Attendance>> GetByDateRangeAsync(DateTime from, DateTime to)
+{
+    var start = DateTime.SpecifyKind(from.Date, DateTimeKind.Utc);
+    var end = DateTime.SpecifyKind(to.Date, DateTimeKind.Utc).AddDays(1);
 
-        return await _db.Attendances
-            .Include(a => a.Learner)
-            .Include(a => a.RecordedBy)
-            .Where(a => a.Date >= start && a.Date < end)
-            .OrderByDescending(a => a.Date)
-            .ToListAsync();
-    }
+    return await _db.Attendances
+        .Include(a => a.Learner)
+        .Include(a => a.RecordedBy)
+        .Where(a => a.Date >= start && a.Date < end)
+        .OrderByDescending(a => a.Date)
+        .ToListAsync();
+}
 
-    public async Task<Attendance?> GetByLearnerAndDateAsync(Guid learnerId, DateTime date)
-    {
-        var start = date.Date;
-        var end = start.AddDays(1);
+public async Task<Attendance?> GetByLearnerAndDateAsync(Guid learnerId, DateTime date)
+{
+    var start = DateTime.SpecifyKind(date.Date, DateTimeKind.Utc);
+    var end = start.AddDays(1);
 
-        return await _db.Attendances
-            .FirstOrDefaultAsync(a =>
-                a.LearnerId == learnerId &&
-                a.Date >= start && a.Date < end);
-    }
+    return await _db.Attendances
+        .FirstOrDefaultAsync(a =>
+            a.LearnerId == learnerId &&
+            a.Date >= start && a.Date < end);
+}
 
     public async Task<Attendance> AddAsync(Attendance attendance)
     {
