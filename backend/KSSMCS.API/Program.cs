@@ -172,4 +172,10 @@ app.MapGet("/api/health", async (AppDbContext db) =>
     }
 });
 
+var port = Environment.GetEnvironmentVariable("PORT");
+if (port is not null)
+{
+    app.Urls.Add($"http://0.0.0.0:{port}");
+}
+
 app.Run();

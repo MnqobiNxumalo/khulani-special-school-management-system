@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment files — ignore local but keep production template
+web/.env
+web/.env.local
+!web/.env.production
