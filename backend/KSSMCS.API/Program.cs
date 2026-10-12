@@ -120,14 +120,16 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
-    {
-        policy.WithOrigins(
-                "http://localhost:5173",
-                "http://localhost:3000")
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials();
-    });
+{
+    policy.WithOrigins(
+            "http://localhost:5173",
+            "http://localhost:3000",
+            "https://*.vercel.app")  // Will restrict once Vercel URL is known
+        .SetIsOriginAllowed(_ => true)  // Temporary: allow all origins for initial Vercel deploy
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials();
+});
 });
 
 var app = builder.Build();
