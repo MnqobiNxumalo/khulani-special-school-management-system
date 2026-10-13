@@ -70,6 +70,9 @@ builder.Services.AddScoped<IMessageService, MessageService>();
 // Visitor Management
 builder.Services.AddScoped<IVisitorRepository, VisitorRepository>();
 builder.Services.AddScoped<IVisitorService, VisitorService>();
+// User Management
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUserService, UserService>();
 // ============================================================
 // 5. Controllers
 // ============================================================

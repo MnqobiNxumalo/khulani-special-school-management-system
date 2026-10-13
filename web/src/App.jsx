@@ -9,6 +9,7 @@ import HealthIncidents from './pages/HealthIncidents';
 import Attendance from './pages/Attendance';
 import Messages from './pages/Messages';
 import Visitors from './pages/Visitors';
+import Staff from './pages/Staff';
 
 function App() {
   const { isAuthenticated } = useAuth();
@@ -36,6 +37,14 @@ function App() {
         <Route path="attendance" element={<Attendance />} />
         <Route path="messages" element={<Messages />} />
         <Route path="visitors" element={<Visitors />} />
+        <Route
+          path="staff"
+          element={
+            <ProtectedRoute allowedRoles={['principal', 'admin']}>
+              <Staff />
+            </ProtectedRoute>
+          }
+        />
       </Route>
 
       {/* Fallback */}
