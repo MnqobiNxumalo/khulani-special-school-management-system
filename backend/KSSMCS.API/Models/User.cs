@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KSSMCS.API.Models;
 
@@ -32,6 +33,11 @@ public class User
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    // For parent users: the learner they are the guardian of
+    public Guid? LinkedLearnerId { get; set; }
+
+   [ForeignKey(nameof(LinkedLearnerId))]
+   public Learner? LinkedLearner { get; set; }
 
     // Navigation properties
     public ICollection<HealthIncident> ReportedIncidents { get; set; } = new List<HealthIncident>();

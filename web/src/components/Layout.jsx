@@ -13,13 +13,15 @@ const Layout = () => {
   };
 
   const allNavItems = [
-  { path: '/', label: 'Dashboard', icon: '📊', roles: ['principal', 'admin', 'teacher', 'parent'] },
+  { path: '/', label: 'Dashboard', icon: '📊', roles: ['principal', 'admin', 'teacher'] },
   { path: '/learners', label: 'Learners', icon: '👨‍🎓', roles: ['principal', 'admin', 'teacher'] },
-  { path: '/health-incidents', label: 'Health Incidents', icon: '🏥', roles: ['principal', 'admin', 'teacher', 'parent'] },
-  { path: '/attendance', label: 'Attendance', icon: '✅', roles: ['principal', 'admin', 'teacher', 'parent'] },
-  { path: '/messages', label: 'Messages', icon: '💬', roles: ['principal', 'admin', 'teacher', 'parent'] },
+  { path: '/health-incidents', label: 'Health Incidents', icon: '🏥', roles: ['principal', 'admin', 'teacher'] },
+  { path: '/attendance', label: 'Attendance', icon: '✅', roles: ['principal', 'admin', 'teacher'] },
+  { path: '/messages', label: 'Messages', icon: '💬', roles: ['principal', 'admin', 'teacher'] },
   { path: '/visitors', label: 'Visitors', icon: '🚪', roles: ['principal', 'admin', 'teacher'] },
   { path: '/staff', label: 'Staff', icon: '👥', roles: ['principal', 'admin'] },
+  // Parent-specific items
+  { path: '/parent', label: 'My Child', icon: '👨‍👩‍👧', roles: ['parent'] },
 ];
 
   return (

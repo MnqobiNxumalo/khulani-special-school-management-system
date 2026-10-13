@@ -73,6 +73,7 @@ builder.Services.AddScoped<IVisitorService, VisitorService>();
 // User Management
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IParentService, ParentService>();
 // ============================================================
 // 5. Controllers
 // ============================================================

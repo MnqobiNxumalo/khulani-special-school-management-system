@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Navigate } from 'react-router-dom';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 
@@ -9,7 +10,13 @@ const Dashboard = () => {
     incidents: 0,
     messages: 0,
     visitors: 0,
+
   });
+
+    if (user?.role === 'parent') {
+    return <Navigate to="/parent" replace />;
+  }
+  
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
