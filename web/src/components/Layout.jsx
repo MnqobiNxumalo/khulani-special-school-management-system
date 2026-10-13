@@ -12,14 +12,15 @@ const Layout = () => {
     navigate('/login');
   };
 
-  const navItems = [
-    { path: '/', label: 'Dashboard', icon: '📊' },
-    { path: '/learners', label: 'Learners', icon: '👨‍🎓' },
-    { path: '/health-incidents', label: 'Health Incidents', icon: '🏥' },
-    { path: '/attendance', label: 'Attendance', icon: '✅' },
-    { path: '/messages', label: 'Messages', icon: '💬' },
-    { path: '/visitors', label: 'Visitors', icon: '🚪' },
-  ];
+  const allNavItems = [
+  { path: '/', label: 'Dashboard', icon: '📊', roles: ['principal', 'admin', 'teacher', 'parent'] },
+  { path: '/learners', label: 'Learners', icon: '👨‍🎓', roles: ['principal', 'admin', 'teacher'] },
+  { path: '/health-incidents', label: 'Health Incidents', icon: '🏥', roles: ['principal', 'admin', 'teacher', 'parent'] },
+  { path: '/attendance', label: 'Attendance', icon: '✅', roles: ['principal', 'admin', 'teacher', 'parent'] },
+  { path: '/messages', label: 'Messages', icon: '💬', roles: ['principal', 'admin', 'teacher', 'parent'] },
+  { path: '/visitors', label: 'Visitors', icon: '🚪', roles: ['principal', 'admin', 'teacher'] },
+  { path: '/staff', label: 'Staff', icon: '👥', roles: ['principal', 'admin'] },
+];
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -47,7 +48,9 @@ const Layout = () => {
 
         {/* Navigation */}
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-          {navItems.map((item) => (
+          {allNavItems
+  .filter((item) => item.roles.includes(user?.role))
+  .map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
