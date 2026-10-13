@@ -226,6 +226,9 @@ namespace KSSMCS.API.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<Guid?>("LinkedLearnerId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("text");
@@ -242,6 +245,8 @@ namespace KSSMCS.API.Migrations
 
                     b.HasIndex("Email")
                         .IsUnique();
+
+                    b.HasIndex("LinkedLearnerId");
 
                     b.ToTable("Users");
                 });
@@ -341,6 +346,16 @@ namespace KSSMCS.API.Migrations
                     b.Navigation("Receiver");
 
                     b.Navigation("Sender");
+                });
+
+            modelBuilder.Entity("KSSMCS.API.Models.User", b =>
+                {
+                    b.HasOne("KSSMCS.API.Models.Learner", "LinkedLearner")
+                        .WithMany()
+                        .HasForeignKey("LinkedLearnerId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("LinkedLearner");
                 });
 
             modelBuilder.Entity("KSSMCS.API.Models.Visitor", b =>

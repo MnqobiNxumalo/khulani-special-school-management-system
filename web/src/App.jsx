@@ -10,6 +10,7 @@ import Attendance from './pages/Attendance';
 import Messages from './pages/Messages';
 import Visitors from './pages/Visitors';
 import Staff from './pages/Staff';
+import ParentDashboard from './pages/ParentDashboard';
 
 function App() {
   const { isAuthenticated } = useAuth();
@@ -31,12 +32,20 @@ function App() {
           </ProtectedRoute>
         }
       >
+        {/* Dashboard is role-aware — see Dashboard.jsx */}
         <Route index element={<Dashboard />} />
+
+        {/* Staff-only routes */}
         <Route path="learners" element={<Learners />} />
         <Route path="health-incidents" element={<HealthIncidents />} />
         <Route path="attendance" element={<Attendance />} />
         <Route path="messages" element={<Messages />} />
         <Route path="visitors" element={<Visitors />} />
+
+        {/* Parent-only route */}
+        <Route path="parent" element={<ParentDashboard />} />
+
+        {/* Principal/Admin only */}
         <Route
           path="staff"
           element={

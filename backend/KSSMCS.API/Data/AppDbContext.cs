@@ -66,5 +66,12 @@ public class AppDbContext : DbContext
             .WithMany(u => u.ReceivedMessages)
             .HasForeignKey(m => m.ReceiverId)
             .OnDelete(DeleteBehavior.Restrict);
+
+            // Parent-Learner link
+modelBuilder.Entity<User>()
+    .HasOne(u => u.LinkedLearner)
+    .WithMany()
+    .HasForeignKey(u => u.LinkedLearnerId)
+    .OnDelete(DeleteBehavior.SetNull);   
     }
 }
