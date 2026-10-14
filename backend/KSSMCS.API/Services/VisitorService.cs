@@ -15,6 +15,8 @@ public interface IVisitorService
     Task<VisitorResponseDto?> CheckOutAsync(Guid id);
     Task<bool> DeleteAsync(Guid id);
     Task<int> CountAsync();
+    Task<VisitorResponseDto> PublicCheckInAsync(PublicCheckInDto dto);
+    Task<VisitorResponseDto?> PublicCheckOutAsync(PublicCheckOutDto dto);
 }
 
 public class VisitorService : IVisitorService
@@ -107,6 +109,62 @@ public class VisitorService : IVisitorService
         return await _repo.CountAsync();
     }
 
+    // ============================================================
+    // Public kiosk methods (no authentication)
+    // ============================================================
+    public async Task<VisitorResponseDto> PublicCheckInAsync(PublicCheckInDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.FullName))
+            throw new ArgumentException("Visitor name cannot be empty.");
+
+        if (string.IsNullOrWhiteSpace(dto.Phone))
+            throw new ArgumentException("Phone number is required for kiosk check-in.");
+
+        // Prevent duplicate active check-in with same phone
+        var active = await _repo.GetActiveAsync();
+        if (active.Any(v => v.Phone == dto.Phone))
+        {
+            throw new ArgumentException(
+                "A visitor with this phone number is already checked in. Please check out first.");
+        }
+
+        var visitor = new Visitor
+        {
+            FullName = dto.FullName.Trim(),
+            Phone = dto.Phone.Trim(),
+            Purpose = dto.Purpose.Trim(),
+            CheckInTime = DateTime.UtcNow,
+            CheckOutTime = null,
+            RecordedByUserId = null // No authenticated user — kiosk self-service
+        };
+
+        await _repo.AddAsync(visitor);
+        return MapToDto(visitor);
+    }
+
+    public async Task<VisitorResponseDto?> PublicCheckOutAsync(PublicCheckOutDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.Phone))
+            throw new ArgumentException("Phone number is required.");
+
+        // Find the most recent active visitor with this phone
+        var active = await _repo.GetActiveAsync();
+        var visitor = active
+            .Where(v => v.Phone == dto.Phone)
+            .OrderByDescending(v => v.CheckInTime)
+            .FirstOrDefault();
+
+        if (visitor == null)
+            return null;
+
+        visitor.CheckOutTime = DateTime.UtcNow;
+        await _repo.UpdateAsync(visitor);
+        return MapToDto(visitor);
+    }
+
+    // ============================================================
+    // DTO mapping
+    // ============================================================
     private static VisitorResponseDto MapToDto(Visitor v)
     {
         return new VisitorResponseDto

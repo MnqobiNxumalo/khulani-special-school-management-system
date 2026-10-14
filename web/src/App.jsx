@@ -11,6 +11,7 @@ import Messages from './pages/Messages';
 import Visitors from './pages/Visitors';
 import Staff from './pages/Staff';
 import ParentDashboard from './pages/ParentDashboard';
+import VisitorKiosk from './pages/VisitorKiosk';
 
 function App() {
   const { isAuthenticated } = useAuth();
@@ -22,6 +23,7 @@ function App() {
         path="/login"
         element={isAuthenticated ? <Navigate to="/" replace /> : <Login />}
       />
+      <Route path="/kiosk" element={<VisitorKiosk />} />
 
       {/* Protected routes wrapped in Layout */}
       <Route
