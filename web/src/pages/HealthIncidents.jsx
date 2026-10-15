@@ -70,10 +70,11 @@ const HealthIncidents = () => {
 
   const handleModalClose = (refresh) => {
     setShowModal(false);
+    const wasEditing = !!editingIncident;
     setEditingIncident(null);
     if (refresh) {
       fetchData();
-      setSuccess(editingIncident ? 'Incident updated.' : 'Incident logged successfully.');
+      setSuccess(wasEditing ? 'Incident updated.' : 'Incident logged successfully.');
       setTimeout(() => setSuccess(''), 3000);
     }
   };
@@ -95,11 +96,10 @@ const HealthIncidents = () => {
 
   return (
     <div>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Health Incidents</h1>
-          <p className="text-gray-600 mt-1">
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+        <div className="min-w-0">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Health Incidents</h1>
+          <p className="text-gray-600 mt-1 text-sm md:text-base">
             Log and review all health and safety events
           </p>
         </div>
@@ -116,7 +116,6 @@ const HealthIncidents = () => {
         )}
       </div>
 
-      {/* Alerts */}
       {success && (
         <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
           ✅ {success}
@@ -128,13 +127,12 @@ const HealthIncidents = () => {
         </div>
       )}
 
-      {/* Filter tabs */}
-      <div className="mb-4 flex gap-2 flex-wrap">
+      <div className="mb-4 flex gap-2 flex-wrap overflow-x-auto pb-1">
         {filterOptions.map((opt) => (
           <button
             key={opt.value}
             onClick={() => setFilter(opt.value)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            className={`px-3 md:px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
               filter === opt.value
                 ? 'bg-primary-600 text-white'
                 : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
@@ -145,7 +143,6 @@ const HealthIncidents = () => {
         ))}
       </div>
 
-      {/* List */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
@@ -175,13 +172,13 @@ const HealthIncidents = () => {
         <div className="space-y-4">
           {incidents.map((incident) => (
             <div key={incident.incidentId} className="card">
-              <div className="flex items-start justify-between">
-                <div className="flex items-start gap-4 flex-1">
-                  <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-2xl flex-shrink-0">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3 flex-1 min-w-0">
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-red-100 flex items-center justify-center text-xl md:text-2xl flex-shrink-0">
                     🚨
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 flex-wrap">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span
                         className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold ${
                           INCIDENT_COLORS[incident.incidentType] || INCIDENT_COLORS.Other
@@ -189,7 +186,7 @@ const HealthIncidents = () => {
                       >
                         {incident.incidentType}
                       </span>
-                      <span className="font-semibold text-gray-900">
+                      <span className="font-semibold text-gray-900 truncate">
                         {incident.learnerFullName}
                       </span>
                       {incident.notifyGuardian && (
@@ -199,47 +196,40 @@ const HealthIncidents = () => {
                       )}
                     </div>
 
-                    <p className="mt-2 text-sm text-gray-700">
-                      {incident.description}
-                    </p>
+                    <p className="mt-2 text-sm text-gray-700">{incident.description}</p>
 
                     {incident.actionTaken && (
                       <p className="mt-2 text-sm text-gray-600">
-                        <span className="font-medium">Action:</span>{' '}
-                        {incident.actionTaken}
+                        <span className="font-medium">Action:</span> {incident.actionTaken}
                       </p>
                     )}
 
                     {incident.outcome && (
                       <p className="mt-1 text-sm text-gray-600">
-                        <span className="font-medium">Outcome:</span>{' '}
-                        {incident.outcome}
+                        <span className="font-medium">Outcome:</span> {incident.outcome}
                       </p>
                     )}
 
-                    <div className="mt-3 flex items-center gap-4 text-xs text-gray-500">
+                    <div className="mt-3 flex items-center gap-3 md:gap-4 text-xs text-gray-500 flex-wrap">
                       <span>📅 {formatDateTime(incident.incidentDate)}</span>
                       <span>👤 {incident.reportedByName}</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Actions */}
                 {canDelete && (
-                  <div className="flex gap-2 flex-shrink-0">
-                    <button
-                      onClick={() =>
-                        handleDelete(
-                          incident.incidentId,
-                          incident.incidentType,
-                          incident.learnerFullName
-                        )
-                      }
-                      className="text-red-600 hover:text-red-800 text-sm font-medium"
-                    >
-                      Delete
-                    </button>
-                  </div>
+                  <button
+                    onClick={() =>
+                      handleDelete(
+                        incident.incidentId,
+                        incident.incidentType,
+                        incident.learnerFullName
+                      )
+                    }
+                    className="text-red-600 hover:text-red-800 text-sm font-medium flex-shrink-0"
+                  >
+                    Delete
+                  </button>
                 )}
               </div>
             </div>
@@ -247,7 +237,6 @@ const HealthIncidents = () => {
         </div>
       )}
 
-      {/* Modal */}
       {showModal && (
         <IncidentModal
           incident={editingIncident}
@@ -260,7 +249,7 @@ const HealthIncidents = () => {
 };
 
 // ============================================================
-// IncidentModal component
+// IncidentModal
 // ============================================================
 const IncidentModal = ({ incident, learners, onClose }) => {
   const isEditing = !!incident;
@@ -290,7 +279,6 @@ const IncidentModal = ({ incident, learners, onClose }) => {
 
     try {
       if (isEditing) {
-        // Update doesn't include learnerId (immutable)
         await api.put(`/healthincidents/${incident.incidentId}`, {
           incidentType: formData.incidentType,
           description: formData.description,
@@ -314,10 +302,10 @@ const IncidentModal = ({ incident, learners, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full my-8">
-        <div className="p-6 border-b border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-900">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end md:items-center justify-center md:p-4 z-50">
+      <div className="bg-white rounded-t-2xl md:rounded-2xl shadow-2xl max-w-2xl w-full max-h-[95vh] md:max-h-[90vh] overflow-y-auto">
+        <div className="p-5 md:p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
+          <h2 className="text-xl md:text-2xl font-bold text-gray-900">
             {isEditing ? 'Edit Incident' : 'Log New Health Incident'}
           </h2>
           <p className="text-sm text-gray-500 mt-1">
@@ -327,18 +315,15 @@ const IncidentModal = ({ incident, learners, onClose }) => {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="p-5 md:p-6 space-y-5">
           {error && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
               {error}
             </div>
           )}
 
-          {/* Learner */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Learner *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Learner *</label>
             <select
               name="learnerId"
               value={formData.learnerId}
@@ -354,18 +339,10 @@ const IncidentModal = ({ incident, learners, onClose }) => {
                 </option>
               ))}
             </select>
-            {isEditing && (
-              <p className="text-xs text-gray-500 mt-1">
-                Learner cannot be changed for an existing incident.
-              </p>
-            )}
           </div>
 
-          {/* Type */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Incident Type *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Incident Type *</label>
             <select
               name="incidentType"
               value={formData.incidentType}
@@ -381,7 +358,6 @@ const IncidentModal = ({ incident, learners, onClose }) => {
             </select>
           </div>
 
-          {/* Description */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Description * (minimum 10 characters)
@@ -401,11 +377,8 @@ const IncidentModal = ({ incident, learners, onClose }) => {
             </p>
           </div>
 
-          {/* Action Taken */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Action Taken
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Action Taken</label>
             <textarea
               name="actionTaken"
               value={formData.actionTaken}
@@ -416,51 +389,44 @@ const IncidentModal = ({ incident, learners, onClose }) => {
             />
           </div>
 
-          {/* Outcome */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Outcome
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Outcome</label>
             <textarea
               name="outcome"
               value={formData.outcome}
               onChange={handleChange}
               rows="2"
               className="input-field"
-              placeholder="e.g., Learner recovered and resumed class, monitored for the rest of the day..."
+              placeholder="e.g., Learner recovered and resumed class..."
             />
           </div>
 
-          {/* Notify Guardian */}
-          <label className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg cursor-pointer">
+          <label className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg cursor-pointer">
             <input
               type="checkbox"
               name="notifyGuardian"
               checked={formData.notifyGuardian}
               onChange={handleChange}
-              className="w-5 h-5 text-primary-600 rounded"
+              className="w-5 h-5 text-primary-600 rounded mt-0.5"
             />
             <div>
-              <p className="font-medium text-gray-900">
-                Notify Guardian
-              </p>
+              <p className="font-medium text-gray-900">Notify Guardian</p>
               <p className="text-xs text-gray-600">
                 Flag this incident for parent/guardian notification
               </p>
             </div>
           </label>
 
-          {/* Actions */}
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+          <div className="flex flex-col-reverse md:flex-row md:justify-end gap-3 pt-4 border-t border-gray-200">
             <button
               type="button"
               onClick={() => onClose(false)}
-              className="btn-secondary"
+              className="btn-secondary w-full md:w-auto"
               disabled={saving}
             >
               Cancel
             </button>
-            <button type="submit" className="btn-primary" disabled={saving}>
+            <button type="submit" className="btn-primary w-full md:w-auto" disabled={saving}>
               {saving ? 'Saving...' : isEditing ? 'Update Incident' : 'Log Incident'}
             </button>
           </div>
