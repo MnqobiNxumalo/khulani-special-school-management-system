@@ -8,7 +8,7 @@ namespace KSSMCS.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+[Authorize(Roles = "principal,admin")]
 public class VisitorsController : ControllerBase
 {
     private readonly IVisitorService _service;

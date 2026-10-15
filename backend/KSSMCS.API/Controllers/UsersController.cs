@@ -26,6 +26,40 @@ public class UsersController : ControllerBase
     private string CurrentUserRole =>
         User.FindFirstValue(ClaimTypes.Role) ?? "";
 
+    /// <summary>
+    /// Simple user directory — accessible to ALL authenticated users.
+    /// Returns id, fullName, email, role for all ACTIVE users.
+    /// Used for messaging recipient lists.
+    /// </summary>
+    [HttpGet("directory")]
+    public async Task<IActionResult> GetDirectory()
+    {
+        try
+        {
+            var users = await _service.GetAllAsync();
+            var directory = users
+                .Where(u => u.IsActive)
+                .Select(u => new
+                {
+                    u.UserId,
+                    u.FirstName,
+                    u.LastName,
+                    u.FullName,
+                    u.Email,
+                    u.Role
+                })
+                .OrderBy(u => u.Role)
+                .ThenBy(u => u.LastName);
+
+            return Ok(directory);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching user directory");
+            return StatusCode(500, new { message = "An error occurred." });
+        }
+    }
+
     /// <summary>Get all users (principal and admin only)</summary>
     [HttpGet]
     [Authorize(Roles = "principal,admin")]
@@ -62,7 +96,7 @@ public class UsersController : ControllerBase
         }
     }
 
-    /// <summary>Create a new staff user (principal and admin only)</summary>
+    /// <summary>Create a new staff or parent user (principal and admin only)</summary>
     [HttpPost]
     [Authorize(Roles = "principal,admin")]
     public async Task<IActionResult> Create([FromBody] CreateUserDto dto)

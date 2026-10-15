@@ -73,5 +73,12 @@ modelBuilder.Entity<User>()
     .WithMany()
     .HasForeignKey(u => u.LinkedLearnerId)
     .OnDelete(DeleteBehavior.SetNull);   
+
+    // Learner → Assigned Teacher
+modelBuilder.Entity<Learner>()
+    .HasOne(l => l.AssignedTeacher)
+    .WithMany()
+    .HasForeignKey(l => l.AssignedTeacherId)
+    .OnDelete(DeleteBehavior.SetNull);
     }
 }

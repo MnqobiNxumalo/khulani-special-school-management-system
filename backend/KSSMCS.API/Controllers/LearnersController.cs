@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using KSSMCS.API.DTOs;
@@ -20,20 +21,32 @@ public class LearnersController : ControllerBase
     }
 
     /// <summary>
-    /// Get all learners (any authenticated user)
+    /// Get learners — teachers see only their assigned learners, principal/admin see all
     /// </summary>
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] string? search)
     {
         try
         {
-            if (!string.IsNullOrWhiteSpace(search))
+            // Determine current user role and id
+            var role = User.FindFirst(ClaimTypes.Role)?.Value ?? "";
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            IEnumerable<LearnerResponseDto> learners;
+
+            if (role == "teacher" && Guid.TryParse(userIdStr, out var teacherId))
             {
-                var searchResults = await _learnerService.SearchAsync(search);
-                return Ok(searchResults);
+                // Teachers see ONLY learners assigned to them
+                learners = await _learnerService.GetForTeacherAsync(teacherId);
+            }
+            else
+            {
+                // Principal/Admin see all (with optional search)
+                learners = string.IsNullOrWhiteSpace(search)
+                    ? await _learnerService.GetAllAsync()
+                    : await _learnerService.SearchAsync(search);
             }
 
-            var learners = await _learnerService.GetAllAsync();
             return Ok(learners);
         }
         catch (Exception ex)
@@ -66,7 +79,8 @@ public class LearnersController : ControllerBase
     }
 
     /// <summary>
-    /// Create a new learner (Principal, Admin, Teacher only)
+    /// Create a new learner (Principal, Admin, Teacher).
+    /// Teachers are automatically assigned as the learner's teacher.
     /// </summary>
     [HttpPost]
     [Authorize(Roles = "principal,admin,teacher")]
@@ -77,6 +91,17 @@ public class LearnersController : ControllerBase
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
+            }
+
+            // If a teacher creates a learner, auto-assign it to themselves
+            var role = User.FindFirst(ClaimTypes.Role)?.Value ?? "";
+            if (role == "teacher" && !dto.AssignedTeacherId.HasValue)
+            {
+                var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (Guid.TryParse(userIdStr, out var teacherId))
+                {
+                    dto.AssignedTeacherId = teacherId;
+                }
             }
 
             var created = await _learnerService.CreateAsync(dto);

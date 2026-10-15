@@ -5,16 +5,17 @@ import { useAuth } from '../context/AuthContext';
 const Learners = () => {
   const { user } = useAuth();
   const [learners, setLearners] = useState([]);
+  const [teachers, setTeachers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingLearner, setEditingLearner] = useState(null);
-  const [success, setSuccess] = useState('');
 
-  // Only principal and admin can edit/delete
   const canEdit = ['principal', 'admin'].includes(user?.role);
   const canCreate = ['principal', 'admin', 'teacher'].includes(user?.role);
+  const isTeacher = user?.role === 'teacher';
 
   const fetchLearners = async () => {
     setLoading(true);
@@ -30,8 +31,27 @@ const Learners = () => {
     }
   };
 
+  // Load teachers for the assignment dropdown (principal/admin only)
+  const fetchTeachers = async () => {
+    if (!canEdit) return;
+    try {
+      const response = await api.get('/users');
+      const teachersList = response.data.filter(
+        (u) => u.role === 'teacher' && u.isActive
+      );
+      setTeachers(teachersList);
+    } catch (err) {
+      console.error('Failed to load teachers:', err);
+    }
+  };
+
   useEffect(() => {
     fetchLearners();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    fetchTeachers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -65,10 +85,11 @@ const Learners = () => {
 
   const handleModalClose = (refresh) => {
     setShowModal(false);
+    const wasEditing = !!editingLearner;
     setEditingLearner(null);
     if (refresh) {
       fetchLearners();
-      setSuccess(editingLearner ? 'Learner updated successfully.' : 'Learner created successfully.');
+      setSuccess(wasEditing ? 'Learner updated successfully.' : 'Learner created successfully.');
       setTimeout(() => setSuccess(''), 3000);
     }
   };
@@ -78,8 +99,14 @@ const Learners = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Learners</h1>
-          <p className="text-gray-600 mt-1">Manage student profiles and records</p>
+          <h1 className="text-3xl font-bold text-gray-900">
+            {isTeacher ? 'My Learners' : 'Learners'}
+          </h1>
+          <p className="text-gray-600 mt-1">
+            {isTeacher
+              ? 'Learners assigned to you'
+              : 'Manage all student profiles and records'}
+          </p>
         </div>
         {canCreate && (
           <button onClick={handleCreate} className="btn-primary">
@@ -136,113 +163,130 @@ const Learners = () => {
       ) : learners.length === 0 ? (
         <div className="card text-center py-12">
           <div className="text-6xl mb-4">👨‍🎓</div>
-          <p className="text-gray-600 mb-2">No learners found</p>
+          <p className="text-gray-600 mb-2">
+            {isTeacher ? 'No learners assigned to you yet' : 'No learners found'}
+          </p>
           {search && (
             <p className="text-sm text-gray-500">Try a different search term</p>
           )}
           {canCreate && !search && (
             <button onClick={handleCreate} className="btn-primary mt-4">
-              Add the first learner
+              {isTeacher ? 'Create a learner (auto-assigned to you)' : 'Add the first learner'}
             </button>
           )}
         </div>
       ) : (
         <div className="card overflow-hidden p-0">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Age
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Gender
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Guardian
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Incidents
-                </th>
-                {(canEdit || canCreate) && (
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Name
                   </th>
-                )}
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {learners.map((learner) => (
-                <tr key={learner.learnerId} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-semibold">
-                        {learner.firstName?.[0]}{learner.lastName?.[0]}
-                      </div>
-                      <div className="ml-3">
-                        <p className="font-medium text-gray-900">
-                          {learner.firstName} {learner.lastName}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          ID: {learner.learnerId.slice(0, 8)}...
-                        </p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {learner.age} years
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {learner.gender || '—'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {learner.guardianName || '—'}
-                    {learner.guardianPhone && (
-                      <div className="text-xs text-gray-500">{learner.guardianPhone}</div>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <span
-                      className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                        learner.healthIncidentCount > 0
-                          ? 'bg-red-100 text-red-700'
-                          : 'bg-gray-100 text-gray-600'
-                      }`}
-                    >
-                      {learner.healthIncidentCount}
-                    </span>
-                  </td>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Age
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Gender
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Guardian
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Assigned Teacher
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Incidents
+                  </th>
                   {(canEdit || canCreate) && (
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                      {canEdit && (
-                        <button
-                          onClick={() => handleEdit(learner)}
-                          className="text-primary-600 hover:text-primary-800 mr-4 font-medium"
-                        >
-                          Edit
-                        </button>
-                      )}
-                      {canEdit && (
-                        <button
-                          onClick={() =>
-                            handleDelete(
-                              learner.learnerId,
-                              `${learner.firstName} ${learner.lastName}`
-                            )
-                          }
-                          className="text-red-600 hover:text-red-800 font-medium"
-                        >
-                          Delete
-                        </button>
-                      )}
-                    </td>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
                   )}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {learners.map((learner) => (
+                  <tr key={learner.learnerId} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-semibold">
+                          {learner.firstName?.[0]}{learner.lastName?.[0]}
+                        </div>
+                        <div className="ml-3">
+                          <p className="font-medium text-gray-900">
+                            {learner.firstName} {learner.lastName}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            ID: {learner.learnerId.slice(0, 8)}...
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {learner.age} years
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {learner.gender || '—'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {learner.guardianName || '—'}
+                      {learner.guardianPhone && (
+                        <div className="text-xs text-gray-500">{learner.guardianPhone}</div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      {learner.assignedTeacherName ? (
+                        <span className="inline-flex items-center gap-1 text-gray-900">
+                          <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                          {learner.assignedTeacherName}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400 italic text-xs">Unassigned</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <span
+                        className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
+                          learner.healthIncidentCount > 0
+                            ? 'bg-red-100 text-red-700'
+                            : 'bg-gray-100 text-gray-600'
+                        }`}
+                      >
+                        {learner.healthIncidentCount}
+                      </span>
+                    </td>
+                    {(canEdit || canCreate) && (
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                        {canEdit && (
+                          <button
+                            onClick={() => handleEdit(learner)}
+                            className="text-primary-600 hover:text-primary-800 mr-4 font-medium"
+                          >
+                            Edit
+                          </button>
+                        )}
+                        {canEdit && (
+                          <button
+                            onClick={() =>
+                              handleDelete(
+                                learner.learnerId,
+                                `${learner.firstName} ${learner.lastName}`
+                              )
+                            }
+                            className="text-red-600 hover:text-red-800 font-medium"
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
@@ -250,6 +294,8 @@ const Learners = () => {
       {showModal && (
         <LearnerModal
           learner={editingLearner}
+          teachers={teachers}
+          canAssign={canEdit}
           onClose={handleModalClose}
         />
       )}
@@ -258,9 +304,9 @@ const Learners = () => {
 };
 
 // ============================================================
-// LearnerModal component (inline for simplicity)
+// LearnerModal component
 // ============================================================
-const LearnerModal = ({ learner, onClose }) => {
+const LearnerModal = ({ learner, teachers, canAssign, onClose }) => {
   const isEditing = !!learner;
   const [formData, setFormData] = useState({
     firstName: learner?.firstName || '',
@@ -274,6 +320,7 @@ const LearnerModal = ({ learner, onClose }) => {
     guardianName: learner?.guardianName || '',
     guardianPhone: learner?.guardianPhone || '',
     guardianEmail: learner?.guardianEmail || '',
+    assignedTeacherId: learner?.assignedTeacherId || '',
   });
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -291,6 +338,7 @@ const LearnerModal = ({ learner, onClose }) => {
       const payload = {
         ...formData,
         dateOfBirth: new Date(formData.dateOfBirth).toISOString(),
+        assignedTeacherId: formData.assignedTeacherId || null,
       };
 
       if (isEditing) {
@@ -403,6 +451,36 @@ const LearnerModal = ({ learner, onClose }) => {
               />
             </div>
           </div>
+
+          {/* Teacher Assignment — only for principal/admin */}
+          {canAssign && (
+            <div>
+              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">
+                Teacher Assignment
+              </h3>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Assigned Teacher
+                </label>
+                <select
+                  name="assignedTeacherId"
+                  value={formData.assignedTeacherId}
+                  onChange={handleChange}
+                  className="input-field"
+                >
+                  <option value="">— Unassigned —</option>
+                  {teachers.map((t) => (
+                    <option key={t.userId} value={t.userId}>
+                      {t.fullName} ({t.email})
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  The assigned teacher will be the only one (besides principal/admin) who can see this learner.
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Support & Medical */}
           <div>

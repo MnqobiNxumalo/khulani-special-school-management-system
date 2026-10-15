@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KSSMCS.API.Models;
 
@@ -44,6 +45,12 @@ public class Learner
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+    // Teacher assignment — only this teacher (plus principal/admin) can see this learner
+public Guid? AssignedTeacherId { get; set; }
+
+[ForeignKey(nameof(AssignedTeacherId))]
+public User? AssignedTeacher { get; set; }
 
     // Navigation properties
     public ICollection<HealthIncident> HealthIncidents { get; set; } = new List<HealthIncident>();

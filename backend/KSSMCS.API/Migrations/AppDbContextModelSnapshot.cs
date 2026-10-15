@@ -114,6 +114,9 @@ namespace KSSMCS.API.Migrations
                     b.Property<string>("Allergies")
                         .HasColumnType("text");
 
+                    b.Property<Guid?>("AssignedTeacherId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -159,6 +162,8 @@ namespace KSSMCS.API.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("LearnerId");
+
+                    b.HasIndex("AssignedTeacherId");
 
                     b.ToTable("Learners");
                 });
@@ -321,6 +326,16 @@ namespace KSSMCS.API.Migrations
                     b.Navigation("Learner");
 
                     b.Navigation("ReportedBy");
+                });
+
+            modelBuilder.Entity("KSSMCS.API.Models.Learner", b =>
+                {
+                    b.HasOne("KSSMCS.API.Models.User", "AssignedTeacher")
+                        .WithMany()
+                        .HasForeignKey("AssignedTeacherId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("AssignedTeacher");
                 });
 
             modelBuilder.Entity("KSSMCS.API.Models.Message", b =>

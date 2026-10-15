@@ -16,6 +16,8 @@ public class LearnerRepository : ILearnerRepository
     public async Task<IEnumerable<Learner>> GetAllAsync()
     {
         return await _db.Learners
+            .Include(l => l.HealthIncidents)
+            .Include(l => l.AssignedTeacher)
             .OrderBy(l => l.LastName)
             .ThenBy(l => l.FirstName)
             .ToListAsync();
@@ -26,6 +28,7 @@ public class LearnerRepository : ILearnerRepository
         return await _db.Learners
             .Include(l => l.HealthIncidents)
             .Include(l => l.Attendances)
+            .Include(l => l.AssignedTeacher)
             .FirstOrDefaultAsync(l => l.LearnerId == id);
     }
 
@@ -37,10 +40,23 @@ public class LearnerRepository : ILearnerRepository
         var lowerQuery = query.ToLower();
 
         return await _db.Learners
+            .Include(l => l.HealthIncidents)
+            .Include(l => l.AssignedTeacher)
             .Where(l => l.FirstName.ToLower().Contains(lowerQuery)
                      || l.LastName.ToLower().Contains(lowerQuery)
                      || (l.GuardianName != null && l.GuardianName.ToLower().Contains(lowerQuery)))
             .OrderBy(l => l.LastName)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<Learner>> GetByTeacherIdAsync(Guid teacherId)
+    {
+        return await _db.Learners
+            .Include(l => l.HealthIncidents)
+            .Include(l => l.AssignedTeacher)
+            .Where(l => l.AssignedTeacherId == teacherId)
+            .OrderBy(l => l.LastName)
+            .ThenBy(l => l.FirstName)
             .ToListAsync();
     }
 

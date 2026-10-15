@@ -6,7 +6,6 @@ const Messages = () => {
   const { user } = useAuth();
   const [inbox, setInbox] = useState([]);
   const [sent, setSent] = useState([]);
-  const [users, setUsers] = useState([]);
   const [learners, setLearners] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -45,11 +44,9 @@ const Messages = () => {
 
   const handleOpenMessage = async (message) => {
     setSelectedMessage(message);
-    // If it's an unread inbox message, mark it as read
     if (activeTab === 'inbox' && !message.isRead) {
       try {
         await api.put(`/messages/${message.messageId}/read`);
-        // Update local state
         setInbox((prev) =>
           prev.map((m) =>
             m.messageId === message.messageId ? { ...m, isRead: true } : m
@@ -101,9 +98,7 @@ const Messages = () => {
     if (diffDays < 7) return `${diffDays}d ago`;
 
     return d.toLocaleDateString('en-ZA', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
+      day: '2-digit', month: 'short', year: 'numeric',
     });
   };
 
@@ -111,7 +106,6 @@ const Messages = () => {
 
   return (
     <div>
-      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Messages</h1>
@@ -129,7 +123,6 @@ const Messages = () => {
         </button>
       </div>
 
-      {/* Alerts */}
       {success && (
         <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
           ✅ {success}
@@ -141,11 +134,8 @@ const Messages = () => {
         </div>
       )}
 
-      {/* Layout: list + detail */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left: Message list */}
         <div className="lg:col-span-1">
-          {/* Tabs */}
           <div className="bg-white rounded-lg border border-gray-200 mb-4 p-1 flex">
             <button
               onClick={() => {
@@ -175,7 +165,6 @@ const Messages = () => {
             </button>
           </div>
 
-          {/* List */}
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
@@ -196,7 +185,6 @@ const Messages = () => {
               {currentMessages.map((msg) => {
                 const isSelected = selectedMessage?.messageId === msg.messageId;
                 const showAsUnread = activeTab === 'inbox' && !msg.isRead;
-
                 return (
                   <button
                     key={msg.messageId}
@@ -245,7 +233,6 @@ const Messages = () => {
           )}
         </div>
 
-        {/* Right: Message detail */}
         <div className="lg:col-span-2">
           {selectedMessage ? (
             <div className="card sticky top-6">
@@ -313,7 +300,6 @@ const Messages = () => {
         </div>
       </div>
 
-      {/* Modal */}
       {showModal && (
         <ComposeModal
           learners={learners}
@@ -326,7 +312,7 @@ const Messages = () => {
 };
 
 // ============================================================
-// ComposeModal component
+// ComposeModal — uses /users/directory for recipient list
 // ============================================================
 const ComposeModal = ({ learners, currentUserId, onClose }) => {
   const [formData, setFormData] = useState({
@@ -339,46 +325,19 @@ const ComposeModal = ({ learners, currentUserId, onClose }) => {
   const [saving, setSaving] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(true);
 
-  // Fetch all users (for recipient list)
   useEffect(() => {
-    // We don't have a GET /users endpoint yet, so we'll fetch it via a simpler route
-    // For now, use a hardcoded fallback: fetch from auth-registered users table
-    // In a real app, you'd add a `GET /api/users` endpoint. For this WIL project,
-    // we'll fetch users via the /messages endpoint is not available. So we'll
-    // use a simpler trick: get distinct senders from inbox + current user info.
-
     const fetchRecipients = async () => {
       try {
-        // We don't have a users endpoint yet, so fetch via a workaround:
-        // Get all inbox messages to see who else is on the system
-        const inboxRes = await api.get('/messages/inbox');
-        const sentRes = await api.get('/messages/sent');
-
-        // Extract unique users from both lists
-        const userMap = new Map();
-        [...inboxRes.data, ...sentRes.data].forEach((m) => {
-          if (m.senderId !== currentUserId) {
-            userMap.set(m.senderId, {
-              userId: m.senderId,
-              name: m.senderName,
-            });
-          }
-          if (m.receiverId !== currentUserId) {
-            userMap.set(m.receiverId, {
-              userId: m.receiverId,
-              name: m.receiverName,
-            });
-          }
-        });
-
-        setRecipients(Array.from(userMap.values()));
+        const response = await api.get('/users/directory');
+        // Exclude current user from recipient list
+        const others = response.data.filter((u) => u.userId !== currentUserId);
+        setRecipients(others);
       } catch (err) {
         console.error('Failed to load recipients:', err);
       } finally {
         setLoadingUsers(false);
       }
     };
-
     fetchRecipients();
   }, [currentUserId]);
 
@@ -409,13 +368,20 @@ const ComposeModal = ({ learners, currentUserId, onClose }) => {
     }
   };
 
+  const roleIcons = {
+    principal: '👑',
+    admin: '⚙️',
+    teacher: '👨‍🏫',
+    parent: '👨‍👩‍👧',
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full">
         <div className="p-6 border-b border-gray-200">
           <h2 className="text-2xl font-bold text-gray-900">Compose Message</h2>
           <p className="text-sm text-gray-500 mt-1">
-            Send a message to another staff member
+            Send a message to another user
           </p>
         </div>
 
@@ -426,7 +392,6 @@ const ComposeModal = ({ learners, currentUserId, onClose }) => {
             </div>
           )}
 
-          {/* Recipient */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               To *
@@ -435,7 +400,7 @@ const ComposeModal = ({ learners, currentUserId, onClose }) => {
               <div className="text-sm text-gray-500 py-2">Loading recipients...</div>
             ) : recipients.length === 0 ? (
               <div className="text-sm text-amber-600 py-2 bg-amber-50 p-3 rounded-lg">
-                ⚠️ No other users found. Register another staff member first, or send a message to them once they exist.
+                ⚠️ No other users found.
               </div>
             ) : (
               <select
@@ -448,14 +413,13 @@ const ComposeModal = ({ learners, currentUserId, onClose }) => {
                 <option value="">Select recipient...</option>
                 {recipients.map((r) => (
                   <option key={r.userId} value={r.userId}>
-                    {r.name}
+                    {roleIcons[r.role] || '👤'} {r.fullName} — {r.role}
                   </option>
                 ))}
               </select>
             )}
           </div>
 
-          {/* Learner link (optional) */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               About a Learner (optional)
@@ -475,7 +439,6 @@ const ComposeModal = ({ learners, currentUserId, onClose }) => {
             </select>
           </div>
 
-          {/* Message */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Message *
@@ -495,7 +458,6 @@ const ComposeModal = ({ learners, currentUserId, onClose }) => {
             </p>
           </div>
 
-          {/* Actions */}
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
             <button
               type="button"

@@ -35,4 +35,7 @@ public class CreateLearnerDto
     [EmailAddress(ErrorMessage = "Invalid email format")]
     [MaxLength(255)]
     public string? GuardianEmail { get; set; }
+
+    /// <summary>Optional — principal/admin can assign a teacher. Teachers get auto-assigned to themselves.</summary>
+public Guid? AssignedTeacherId { get; set; }
 }
