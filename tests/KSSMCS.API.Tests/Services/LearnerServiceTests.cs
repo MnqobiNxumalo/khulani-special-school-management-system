@@ -32,9 +32,34 @@ public class LearnerServiceTests
             GuardianPhone = "0821234567"
         };
 
+        // AddAsync returns the learner (with a LearnerId assigned)
         _repoMock
             .Setup(r => r.AddAsync(It.IsAny<Learner>()))
-            .ReturnsAsync((Learner l) => l);
+            .ReturnsAsync((Learner l) =>
+            {
+                l.LearnerId = Guid.NewGuid();
+                return l;
+            });
+
+        // GetByIdAsync is called by the service after AddAsync to reload
+        // navigation properties (HealthIncidents, AssignedTeacher).
+        // Return the same learner object.
+        _repoMock
+            .Setup(r => r.GetByIdAsync(It.IsAny<Guid>()))
+            .ReturnsAsync((Guid id) => new Learner
+            {
+                LearnerId = id,
+                FirstName = "Thabo",
+                LastName = "Mkhize",
+                DateOfBirth = new DateTime(2015, 5, 15),
+                Gender = "Male",
+                SupportNeeds = "Requires mobility assistance",
+                GuardianName = "Nomsa Mkhize",
+                GuardianPhone = "0821234567",
+                HealthIncidents = new List<HealthIncident>(),
+                Attendances = new List<Attendance>(),
+                AssignedTeacher = null
+            });
 
         // Act
         var result = await _sut.CreateAsync(dto);
@@ -44,9 +69,10 @@ public class LearnerServiceTests
         Assert.Equal("Thabo", result.FirstName);
         Assert.Equal("Mkhize", result.LastName);
         Assert.Equal("Thabo Mkhize", result.FullName);
-        Assert.True(result.Age >= 10 && result.Age <= 11); // Should be around 10-11
+        Assert.True(result.Age >= 10 && result.Age <= 11);
 
         _repoMock.Verify(r => r.AddAsync(It.IsAny<Learner>()), Times.Once);
+        _repoMock.Verify(r => r.GetByIdAsync(It.IsAny<Guid>()), Times.Once);
     }
 
     [Fact]
@@ -57,7 +83,7 @@ public class LearnerServiceTests
         {
             FirstName = "Future",
             LastName = "Learner",
-            DateOfBirth = DateTime.UtcNow.AddYears(1) // 1 year in the future
+            DateOfBirth = DateTime.UtcNow.AddYears(1)
         };
 
         // Act & Assert
@@ -71,7 +97,7 @@ public class LearnerServiceTests
     [Fact]
     public async Task CreateAsync_WithUnrealisticAge_ThrowsArgumentException()
     {
-        // Arrange: 30 years old — too old for a school learner
+        // Arrange
         var dto = new CreateLearnerDto
         {
             FirstName = "Old",
@@ -96,7 +122,9 @@ public class LearnerServiceTests
             LearnerId = learnerId,
             FirstName = "Thabo",
             LastName = "Mkhize",
-            DateOfBirth = new DateTime(2015, 5, 15)
+            DateOfBirth = new DateTime(2015, 5, 15),
+            HealthIncidents = new List<HealthIncident>(),
+            AssignedTeacher = null
         };
 
         _repoMock
