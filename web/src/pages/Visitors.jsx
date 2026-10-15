@@ -33,7 +33,6 @@ const Visitors = () => {
 
   useEffect(() => {
     fetchData();
-    // Auto-refresh every 60 seconds for updated on-site times
     const interval = setInterval(fetchData, 60000);
     return () => clearInterval(interval);
   }, []);
@@ -102,25 +101,23 @@ const Visitors = () => {
 
   return (
     <div>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Visitors</h1>
-          <p className="text-gray-600 mt-1">
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+        <div className="min-w-0">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Visitors</h1>
+          <p className="text-gray-600 mt-1 text-sm md:text-base">
             Security check-in and on-site tracking
             {active.length > 0 && (
               <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700">
-                {active.length} on-site now
+                {active.length} on-site
               </span>
             )}
           </p>
         </div>
-        <button onClick={() => setShowModal(true)} className="btn-primary">
-          🚪 Check In Visitor
+        <button onClick={() => setShowModal(true)} className="btn-primary whitespace-nowrap">
+          🚪 Check In
         </button>
       </div>
 
-      {/* Alerts */}
       {success && (
         <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
           ✅ {success}
@@ -132,8 +129,7 @@ const Visitors = () => {
         </div>
       )}
 
-      {/* Stats cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
         <div className="card">
           <p className="text-xs font-medium text-green-600 uppercase">On-Site</p>
           <p className="text-2xl font-bold text-green-700 mt-1">{active.length}</p>
@@ -162,31 +158,25 @@ const Visitors = () => {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="mb-4 bg-white rounded-lg border border-gray-200 p-1 inline-flex">
+      <div className="mb-4 bg-white rounded-lg border border-gray-200 p-1 inline-flex overflow-x-auto">
         <button
           onClick={() => setTab('active')}
-          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-            tab === 'active'
-              ? 'bg-primary-600 text-white'
-              : 'text-gray-700 hover:bg-gray-100'
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
+            tab === 'active' ? 'bg-primary-600 text-white' : 'text-gray-700 hover:bg-gray-100'
           }`}
         >
-          🟢 Currently On-Site ({active.length})
+          🟢 On-Site ({active.length})
         </button>
         <button
           onClick={() => setTab('today')}
-          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-            tab === 'today'
-              ? 'bg-primary-600 text-white'
-              : 'text-gray-700 hover:bg-gray-100'
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
+            tab === 'today' ? 'bg-primary-600 text-white' : 'text-gray-700 hover:bg-gray-100'
           }`}
         >
-          📅 Today's Log ({today.length})
+          📅 Today ({today.length})
         </button>
       </div>
 
-      {/* List */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
@@ -195,9 +185,7 @@ const Visitors = () => {
         <div className="card text-center py-12">
           <div className="text-6xl mb-4">🚪</div>
           <p className="text-gray-600 mb-2">
-            {tab === 'active'
-              ? 'No visitors currently on-site'
-              : 'No visitors today'}
+            {tab === 'active' ? 'No visitors currently on-site' : 'No visitors today'}
           </p>
           <p className="text-sm text-gray-500">
             {tab === 'active'
@@ -209,114 +197,133 @@ const Visitors = () => {
           </button>
         </div>
       ) : (
-        <div className="card overflow-hidden p-0">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Visitor
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Purpose
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Check In
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Check Out
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Duration
-                </th>
-                {(canDelete || tab === 'active') && (
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                )}
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {currentList.map((visitor) => (
-                <tr
-                  key={visitor.visitorId}
-                  className={`hover:bg-gray-50 ${
-                    visitor.isCurrentlyOnSite ? 'bg-green-50/50' : ''
-                  }`}
-                >
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-semibold flex-shrink-0">
-                        {visitor.fullName?.split(' ').map((n) => n[0]).slice(0, 2).join('')}
-                      </div>
-                      <div className="ml-3">
-                        <p className="font-medium text-gray-900">
-                          {visitor.fullName}
-                        </p>
-                        {visitor.phone && (
-                          <p className="text-xs text-gray-500">{visitor.phone}</p>
-                        )}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700 max-w-xs">
-                    {visitor.purpose || '—'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {formatDateTime(visitor.checkInTime)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    {visitor.checkOutTime ? (
-                      <span className="text-gray-700">
-                        {formatDateTime(visitor.checkOutTime)}
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
-                        🟢 On-Site
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                    {formatDuration(visitor.minutesOnSite)}
-                  </td>
+        <>
+          {/* Desktop table */}
+          <div className="card overflow-hidden p-0 hidden md:block">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Visitor</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Purpose</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Check In</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Check Out</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
                   {(canDelete || tab === 'active') && (
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                      {visitor.isCurrentlyOnSite && (
-                        <button
-                          onClick={() =>
-                            handleCheckOut(visitor.visitorId, visitor.fullName)
-                          }
-                          className="text-primary-600 hover:text-primary-800 mr-4 font-medium"
-                        >
-                          Check Out
-                        </button>
-                      )}
-                      {canDelete && (
-                        <button
-                          onClick={() =>
-                            handleDelete(visitor.visitorId, visitor.fullName)
-                          }
-                          className="text-red-600 hover:text-red-800 font-medium"
-                        >
-                          Delete
-                        </button>
-                      )}
-                    </td>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                   )}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {currentList.map((visitor) => (
+                  <tr key={visitor.visitorId} className={`hover:bg-gray-50 ${visitor.isCurrentlyOnSite ? 'bg-green-50/50' : ''}`}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-semibold flex-shrink-0">
+                          {visitor.fullName?.split(' ').map((n) => n[0]).slice(0, 2).join('')}
+                        </div>
+                        <div className="ml-3">
+                          <p className="font-medium text-gray-900">{visitor.fullName}</p>
+                          {visitor.phone && <p className="text-xs text-gray-500">{visitor.phone}</p>}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-700 max-w-xs">{visitor.purpose || '—'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatDateTime(visitor.checkInTime)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      {visitor.checkOutTime ? (
+                        <span className="text-gray-700">{formatDateTime(visitor.checkOutTime)}</span>
+                      ) : (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                          🟢 On-Site
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{formatDuration(visitor.minutesOnSite)}</td>
+                    {(canDelete || tab === 'active') && (
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                        {visitor.isCurrentlyOnSite && (
+                          <button
+                            onClick={() => handleCheckOut(visitor.visitorId, visitor.fullName)}
+                            className="text-primary-600 hover:text-primary-800 mr-4 font-medium"
+                          >
+                            Check Out
+                          </button>
+                        )}
+                        {canDelete && (
+                          <button
+                            onClick={() => handleDelete(visitor.visitorId, visitor.fullName)}
+                            className="text-red-600 hover:text-red-800 font-medium"
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile cards */}
+          <div className="md:hidden space-y-3">
+            {currentList.map((visitor) => (
+              <div key={visitor.visitorId} className="card">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-semibold flex-shrink-0">
+                    {visitor.fullName?.split(' ').map((n) => n[0]).slice(0, 2).join('')}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900">{visitor.fullName}</p>
+                    {visitor.phone && <p className="text-xs text-gray-500">{visitor.phone}</p>}
+                    <p className="text-sm text-gray-700 mt-2">{visitor.purpose || '—'}</p>
+                    <div className="mt-2 flex items-center gap-2 flex-wrap">
+                      {visitor.isCurrentlyOnSite ? (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                          🟢 On-Site
+                        </span>
+                      ) : (
+                        <span className="text-xs text-gray-500">Checked out</span>
+                      )}
+                      <span className="text-xs text-gray-500">
+                        {formatDateTime(visitor.checkInTime)} · {formatDuration(visitor.minutesOnSite)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                {(visitor.isCurrentlyOnSite || canDelete) && (
+                  <div className="mt-3 pt-3 border-t border-gray-200 flex gap-3 flex-wrap">
+                    {visitor.isCurrentlyOnSite && (
+                      <button
+                        onClick={() => handleCheckOut(visitor.visitorId, visitor.fullName)}
+                        className="text-primary-600 font-medium text-sm"
+                      >
+                        Check Out
+                      </button>
+                    )}
+                    {canDelete && (
+                      <button
+                        onClick={() => handleDelete(visitor.visitorId, visitor.fullName)}
+                        className="text-red-600 font-medium text-sm"
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
-      {/* Modal */}
       {showModal && <CheckInModal onClose={handleModalClose} />}
     </div>
   );
 };
 
 // ============================================================
-// CheckInModal component
+// CheckInModal
 // ============================================================
 const CheckInModal = ({ onClose }) => {
   const [formData, setFormData] = useState({
@@ -360,27 +367,22 @@ const CheckInModal = ({ onClose }) => {
   ];
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full">
-        <div className="p-6 border-b border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-900">Check In Visitor</h2>
-          <p className="text-sm text-gray-500 mt-1">
-            Register the visitor's arrival for security records
-          </p>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end md:items-center justify-center md:p-4 z-50">
+      <div className="bg-white rounded-t-2xl md:rounded-2xl shadow-2xl max-w-md w-full max-h-[95vh] overflow-y-auto">
+        <div className="p-5 md:p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
+          <h2 className="text-xl md:text-2xl font-bold text-gray-900">Check In Visitor</h2>
+          <p className="text-sm text-gray-500 mt-1">Register the visitor's arrival</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="p-5 md:p-6 space-y-5">
           {error && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
               {error}
             </div>
           )}
 
-          {/* Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Full Name *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
             <input
               type="text"
               name="fullName"
@@ -393,11 +395,8 @@ const CheckInModal = ({ onClose }) => {
             />
           </div>
 
-          {/* Phone */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Phone Number
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
             <input
               type="tel"
               name="phone"
@@ -409,11 +408,8 @@ const CheckInModal = ({ onClose }) => {
             />
           </div>
 
-          {/* Purpose */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Purpose of Visit *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Purpose of Visit *</label>
             <input
               type="text"
               name="purpose"
@@ -424,7 +420,6 @@ const CheckInModal = ({ onClose }) => {
               className="input-field"
               placeholder="e.g., Routine medical check-up"
             />
-            {/* Quick select chips */}
             <div className="flex flex-wrap gap-2 mt-2">
               {quickReasons.map((reason) => (
                 <button
@@ -439,17 +434,16 @@ const CheckInModal = ({ onClose }) => {
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+          <div className="flex flex-col-reverse md:flex-row md:justify-end gap-3 pt-4 border-t border-gray-200">
             <button
               type="button"
               onClick={() => onClose(false)}
-              className="btn-secondary"
+              className="btn-secondary w-full md:w-auto"
               disabled={saving}
             >
               Cancel
             </button>
-            <button type="submit" className="btn-primary" disabled={saving}>
+            <button type="submit" className="btn-primary w-full md:w-auto" disabled={saving}>
               {saving ? 'Checking in...' : 'Check In'}
             </button>
           </div>

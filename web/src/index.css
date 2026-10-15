@@ -13,6 +13,16 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background-color: #f9fafb;
   color: #111827;
+  /* Prevent iOS zoom on input focus */
+  -webkit-text-size-adjust: 100%;
+}
+
+/* iOS safe area padding for modals */
+@supports (padding: max(0px)) {
+  body {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
 }
 
 /* Custom scrollbar */
@@ -34,18 +44,38 @@ body {
 /* Utility classes */
 @layer components {
   .btn-primary {
-    @apply bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply bg-primary-600 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+    min-height: 44px;
   }
   .btn-secondary {
-    @apply bg-white text-gray-700 px-4 py-2 rounded-lg font-medium border border-gray-300 hover:bg-gray-50 transition-colors;
+    @apply bg-white text-gray-700 px-4 py-2.5 rounded-lg font-medium border border-gray-300 hover:bg-gray-50 transition-colors;
+    min-height: 44px;
   }
   .btn-danger {
-    @apply bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700 transition-colors;
+    @apply bg-red-600 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-red-700 transition-colors;
+    min-height: 44px;
   }
   .input-field {
-    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
+    @apply w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
+    min-height: 44px;
+    /* Prevent iOS auto-zoom */
+    font-size: 16px;
   }
   .card {
-    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6;
+    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-4 md:p-6;
+  }
+}
+
+/* Mobile: prevent text from wrapping too aggressively */
+@media (max-width: 640px) {
+  /* Make tables horizontally scrollable */
+  .table-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Smaller headings on mobile */
+  h1 {
+    font-size: 1.5rem;
   }
 }
