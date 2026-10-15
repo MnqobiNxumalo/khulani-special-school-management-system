@@ -17,6 +17,7 @@ public class UserRepository : IUserRepository
     {
         return await _db.Users
             .AsNoTracking()
+            .Include(u => u.LinkedLearner)
             .OrderBy(u => u.Role)
             .ThenBy(u => u.LastName)
             .ToListAsync();
@@ -26,6 +27,7 @@ public class UserRepository : IUserRepository
     {
         return await _db.Users
             .AsNoTracking()
+            .Include(u => u.LinkedLearner)
             .FirstOrDefaultAsync(u => u.UserId == id);
     }
 

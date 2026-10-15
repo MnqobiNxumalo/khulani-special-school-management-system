@@ -25,4 +25,7 @@ public class CreateUserDto
     [RegularExpression("^(principal|admin|teacher|parent)$",
         ErrorMessage = "Role must be: principal, admin, teacher, or parent")]
     public string Role { get; set; } = "teacher";
+
+    /// <summary>For parent accounts: which learner is their child</summary>
+    public Guid? LinkedLearnerId { get; set; }
 }

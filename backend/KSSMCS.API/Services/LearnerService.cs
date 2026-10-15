@@ -9,6 +9,7 @@ public interface ILearnerService
     Task<IEnumerable<LearnerResponseDto>> GetAllAsync();
     Task<LearnerResponseDto?> GetByIdAsync(Guid id);
     Task<IEnumerable<LearnerResponseDto>> SearchAsync(string query);
+    Task<IEnumerable<LearnerResponseDto>> GetForTeacherAsync(Guid teacherId);
     Task<LearnerResponseDto> CreateAsync(CreateLearnerDto dto);
     Task<LearnerResponseDto?> UpdateAsync(Guid id, UpdateLearnerDto dto);
     Task<bool> DeleteAsync(Guid id);
@@ -42,20 +43,20 @@ public class LearnerService : ILearnerService
         return learners.Select(MapToDto);
     }
 
+    public async Task<IEnumerable<LearnerResponseDto>> GetForTeacherAsync(Guid teacherId)
+    {
+        var learners = await _repo.GetByTeacherIdAsync(teacherId);
+        return learners.Select(MapToDto);
+    }
+
     public async Task<LearnerResponseDto> CreateAsync(CreateLearnerDto dto)
     {
-        // Validate DateOfBirth is not in the future
         if (dto.DateOfBirth > DateTime.UtcNow)
-        {
             throw new ArgumentException("Date of birth cannot be in the future.");
-        }
 
-        // Validate age is reasonable (0-25 years for a school)
         var age = DateTime.UtcNow.Year - dto.DateOfBirth.Year;
         if (age < 0 || age > 25)
-        {
             throw new ArgumentException("Age must be between 0 and 25.");
-        }
 
         var learner = new Learner
         {
@@ -70,13 +71,16 @@ public class LearnerService : ILearnerService
             GuardianName = dto.GuardianName?.Trim(),
             GuardianPhone = dto.GuardianPhone?.Trim(),
             GuardianEmail = dto.GuardianEmail?.Trim().ToLower(),
+            AssignedTeacherId = dto.AssignedTeacherId,
             EnrollmentDate = DateTime.UtcNow,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
 
         var created = await _repo.AddAsync(learner);
-        return MapToDto(created);
+        // Reload to get navigation props
+        var full = await _repo.GetByIdAsync(created.LearnerId);
+        return MapToDto(full!);
     }
 
     public async Task<LearnerResponseDto?> UpdateAsync(Guid id, UpdateLearnerDto dto)
@@ -85,9 +89,7 @@ public class LearnerService : ILearnerService
         if (learner == null) return null;
 
         if (dto.DateOfBirth > DateTime.UtcNow)
-        {
             throw new ArgumentException("Date of birth cannot be in the future.");
-        }
 
         learner.FirstName = dto.FirstName.Trim();
         learner.LastName = dto.LastName.Trim();
@@ -100,9 +102,13 @@ public class LearnerService : ILearnerService
         learner.GuardianName = dto.GuardianName?.Trim();
         learner.GuardianPhone = dto.GuardianPhone?.Trim();
         learner.GuardianEmail = dto.GuardianEmail?.Trim().ToLower();
+        learner.AssignedTeacherId = dto.AssignedTeacherId;  // ← THE FIX
+        learner.UpdatedAt = DateTime.UtcNow;
 
-        var updated = await _repo.UpdateAsync(learner);
-        return MapToDto(updated);
+        await _repo.UpdateAsync(learner);
+        // Reload to get navigation props
+        var full = await _repo.GetByIdAsync(id);
+        return MapToDto(full!);
     }
 
     public async Task<bool> DeleteAsync(Guid id)
@@ -133,7 +139,11 @@ public class LearnerService : ILearnerService
             GuardianPhone = l.GuardianPhone,
             GuardianEmail = l.GuardianEmail,
             HealthIncidentCount = l.HealthIncidents?.Count ?? 0,
-            CreatedAt = l.CreatedAt
+            CreatedAt = l.CreatedAt,
+            AssignedTeacherId = l.AssignedTeacherId,
+            AssignedTeacherName = l.AssignedTeacher != null
+                ? $"{l.AssignedTeacher.FirstName} {l.AssignedTeacher.LastName}"
+                : null
         };
     }
 }

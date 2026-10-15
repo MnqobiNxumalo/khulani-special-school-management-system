@@ -35,4 +35,7 @@ public class UpdateLearnerDto
     [EmailAddress(ErrorMessage = "Invalid email format")]
     [MaxLength(255)]
     public string? GuardianEmail { get; set; }
+
+    /// <summary>Principal/Admin can change teacher assignment</summary>
+    public Guid? AssignedTeacherId { get; set; }
 }

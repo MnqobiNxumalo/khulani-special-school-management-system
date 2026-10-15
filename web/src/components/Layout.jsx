@@ -18,7 +18,7 @@ const Layout = () => {
   { path: '/health-incidents', label: 'Health Incidents', icon: '🏥', roles: ['principal', 'admin', 'teacher'] },
   { path: '/attendance', label: 'Attendance', icon: '✅', roles: ['principal', 'admin', 'teacher'] },
   { path: '/messages', label: 'Messages', icon: '💬', roles: ['principal', 'admin', 'teacher'] },
-  { path: '/visitors', label: 'Visitors', icon: '🚪', roles: ['principal', 'admin', 'teacher'] },
+  { path: '/visitors', label: 'Visitors', icon: '🚪', roles: ['principal', 'admin'] },
   { path: '/staff', label: 'Staff', icon: '👥', roles: ['principal', 'admin'] },
   // Parent-specific items
   { path: '/parent', label: 'My Child', icon: '👨‍👩‍👧', roles: ['parent'] },

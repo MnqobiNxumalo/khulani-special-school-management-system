@@ -83,7 +83,6 @@ const Staff = () => {
 
   return (
     <div>
-      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Staff Management</h1>
@@ -92,11 +91,10 @@ const Staff = () => {
           </p>
         </div>
         <button onClick={() => setShowModal(true)} className="btn-primary">
-          + Add Staff Member
+          + Add User
         </button>
       </div>
 
-      {/* Alerts */}
       {success && (
         <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
           ✅ {success}
@@ -108,7 +106,6 @@ const Staff = () => {
         </div>
       )}
 
-      {/* Role filter tabs */}
       <div className="mb-4 flex gap-2 flex-wrap">
         {['all', 'principal', 'admin', 'teacher', 'parent'].map((role) => (
           <button
@@ -125,7 +122,6 @@ const Staff = () => {
         ))}
       </div>
 
-      {/* Users list */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
@@ -135,124 +131,143 @@ const Staff = () => {
           <div className="text-6xl mb-4">👥</div>
           <p className="text-gray-600 mb-2">No users found</p>
           <button onClick={() => setShowModal(true)} className="btn-primary mt-4">
-            Add the first staff member
+            Add the first user
           </button>
         </div>
       ) : (
         <div className="card overflow-hidden p-0">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Email
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Role
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Joined
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredUsers.map((u) => {
-                const isSelf = u.userId === user.userId;
-                return (
-                  <tr key={u.userId} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-semibold flex-shrink-0">
-                          {u.firstName?.[0]}{u.lastName?.[0]}
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Name
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Email
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Role
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Linked Learner
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Joined
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredUsers.map((u) => {
+                  const isSelf = u.userId === user.userId;
+                  return (
+                    <tr key={u.userId} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-semibold flex-shrink-0">
+                            {u.firstName?.[0]}{u.lastName?.[0]}
+                          </div>
+                          <div className="ml-3">
+                            <p className="font-medium text-gray-900">
+                              {u.fullName}
+                              {isSelf && (
+                                <span className="ml-2 text-xs text-primary-600 font-normal">
+                                  (You)
+                                </span>
+                              )}
+                            </p>
+                          </div>
                         </div>
-                        <div className="ml-3">
-                          <p className="font-medium text-gray-900">
-                            {u.fullName}
-                            {isSelf && (
-                              <span className="ml-2 text-xs text-primary-600 font-normal">
-                                (You)
-                              </span>
-                            )}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                      {u.email}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${
-                          ROLE_COLORS[u.role] || 'bg-gray-100 text-gray-700'
-                        }`}
-                      >
-                        {ROLE_ICONS[u.role]} {u.role}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {u.isActive ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
-                          ✅ Active
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                        {u.email}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${
+                            ROLE_COLORS[u.role] || 'bg-gray-100 text-gray-700'
+                          }`}
+                        >
+                          {ROLE_ICONS[u.role]} {u.role}
                         </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">
-                          🚫 Inactive
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatDate(u.createdAt)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                      {!isSelf && (
-                        <>
-                          <button
-                            onClick={() =>
-                              handleToggleActive(
-                                u.userId,
-                                u.fullName,
-                                u.isActive
-                              )
-                            }
-                            className={`mr-4 font-medium ${
-                              u.isActive
-                                ? 'text-amber-600 hover:text-amber-800'
-                                : 'text-green-600 hover:text-green-800'
-                            }`}
-                          >
-                            {u.isActive ? 'Deactivate' : 'Activate'}
-                          </button>
-                          {canDelete && (
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {u.role === 'parent' ? (
+                          u.linkedLearnerName ? (
+                            <span className="text-gray-900">
+                              👨‍🎓 {u.linkedLearnerName}
+                            </span>
+                          ) : (
+                            <span className="text-amber-600 italic text-xs">
+                              ⚠️ Not linked
+                            </span>
+                          )
+                        ) : (
+                          <span className="text-gray-300">—</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {u.isActive ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                            ✅ Active
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">
+                            🚫 Inactive
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {formatDate(u.createdAt)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                        {!isSelf && (
+                          <>
                             <button
-                              onClick={() => handleDelete(u.userId, u.fullName)}
-                              className="text-red-600 hover:text-red-800 font-medium"
+                              onClick={() =>
+                                handleToggleActive(
+                                  u.userId,
+                                  u.fullName,
+                                  u.isActive
+                                )
+                              }
+                              className={`mr-4 font-medium ${
+                                u.isActive
+                                  ? 'text-amber-600 hover:text-amber-800'
+                                  : 'text-green-600 hover:text-green-800'
+                              }`}
                             >
-                              Delete
+                              {u.isActive ? 'Deactivate' : 'Activate'}
                             </button>
-                          )}
-                        </>
-                      )}
-                      {isSelf && (
-                        <span className="text-xs text-gray-400">—</span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                            {canDelete && (
+                              <button
+                                onClick={() => handleDelete(u.userId, u.fullName)}
+                                className="text-red-600 hover:text-red-800 font-medium"
+                              >
+                                Delete
+                              </button>
+                            )}
+                          </>
+                        )}
+                        {isSelf && (
+                          <span className="text-xs text-gray-400">—</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
-      {/* Modal */}
       {showModal && (
         <CreateUserModal
           currentUserRole={user.role}
@@ -260,7 +275,7 @@ const Staff = () => {
             setShowModal(false);
             if (refresh) {
               fetchUsers();
-              setSuccess('Staff member created successfully.');
+              setSuccess('User created successfully.');
               setTimeout(() => setSuccess(''), 3000);
             }
           }}
@@ -271,7 +286,7 @@ const Staff = () => {
 };
 
 // ============================================================
-// CreateUserModal component
+// CreateUserModal — with parent-learner linking
 // ============================================================
 const CreateUserModal = ({ currentUserRole, onClose }) => {
   const [formData, setFormData] = useState({
@@ -280,11 +295,23 @@ const CreateUserModal = ({ currentUserRole, onClose }) => {
     email: '',
     password: '',
     role: 'teacher',
+    linkedLearnerId: '',
   });
+  const [learners, setLearners] = useState([]);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
   const isPrincipal = currentUserRole === 'principal';
+  const isParentRole = formData.role === 'parent';
+
+  // Load learners when role = parent
+  useEffect(() => {
+    if (isParentRole) {
+      api.get('/learners')
+        .then((res) => setLearners(res.data))
+        .catch((err) => console.error('Failed to load learners:', err));
+    }
+  }, [isParentRole]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -296,7 +323,11 @@ const CreateUserModal = ({ currentUserRole, onClose }) => {
     setSaving(true);
 
     try {
-      await api.post('/users', formData);
+      const payload = {
+        ...formData,
+        linkedLearnerId: formData.linkedLearnerId || null,
+      };
+      await api.post('/users', payload);
       onClose(true);
     } catch (err) {
       const msg = err.response?.data?.message
@@ -320,11 +351,11 @@ const CreateUserModal = ({ currentUserRole, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6 border-b border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-900">Add Staff Member</h2>
+          <h2 className="text-2xl font-bold text-gray-900">Add User</h2>
           <p className="text-sm text-gray-500 mt-1">
-            Create a new user account with access to the system
+            Create a new account with access to the system
           </p>
         </div>
 
@@ -408,6 +439,31 @@ const CreateUserModal = ({ currentUserRole, onClose }) => {
             )}
           </div>
 
+          {isParentRole && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Link to Learner *
+              </label>
+              <select
+                name="linkedLearnerId"
+                value={formData.linkedLearnerId}
+                onChange={handleChange}
+                required={isParentRole}
+                className="input-field"
+              >
+                <option value="">Select their child...</option>
+                {learners.map((l) => (
+                  <option key={l.learnerId} value={l.learnerId}>
+                    {l.firstName} {l.lastName} ({l.age} years)
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-500 mt-1">
+                The parent will only be able to see this learner's data.
+              </p>
+            </div>
+          )}
+
           <div>
             <div className="flex items-center justify-between mb-1">
               <label className="block text-sm font-medium text-gray-700">
@@ -431,9 +487,6 @@ const CreateUserModal = ({ currentUserRole, onClose }) => {
               className="input-field font-mono"
               placeholder="Minimum 6 characters"
             />
-            <p className="text-xs text-gray-500 mt-1">
-              The staff member should change this after first login.
-            </p>
           </div>
 
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">

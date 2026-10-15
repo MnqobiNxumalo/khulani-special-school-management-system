@@ -37,14 +37,12 @@ public class UserService : IUserService
 
     public async Task<UserResponseDto> CreateAsync(CreateUserDto dto, string createdByRole)
     {
-        // Rule 1: Email must be unique
         var existing = await _repo.GetByEmailAsync(dto.Email);
         if (existing != null)
         {
             throw new InvalidOperationException("A user with this email already exists.");
         }
 
-        // Rule 2: Only principals can create another principal or admin
         var role = dto.Role.ToLower();
         if (role == "principal" || role == "admin")
         {
@@ -63,17 +61,20 @@ public class UserService : IUserService
             PasswordHash = PasswordHasher.HashPassword(dto.Password),
             Role = role,
             IsActive = true,
+            LinkedLearnerId = role == "parent" ? dto.LinkedLearnerId : null,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
 
         await _repo.AddAsync(user);
-        return MapToDto(user);
+
+        // Reload to get LinkedLearner navigation property
+        var full = await _repo.GetByIdAsync(user.UserId);
+        return MapToDto(full!);
     }
 
     public async Task<UserResponseDto?> ToggleActiveAsync(Guid id, Guid currentUserId)
     {
-        // Prevent self-deactivation
         if (id == currentUserId)
         {
             throw new ArgumentException("You cannot deactivate your own account.");
@@ -107,6 +108,10 @@ public class UserService : IUserService
             Email = u.Email,
             Role = u.Role,
             IsActive = u.IsActive,
+            LinkedLearnerId = u.LinkedLearnerId,
+            LinkedLearnerName = u.LinkedLearner != null
+                ? $"{u.LinkedLearner.FirstName} {u.LinkedLearner.LastName}"
+                : null,
             CreatedAt = u.CreatedAt,
             UpdatedAt = u.UpdatedAt
         };

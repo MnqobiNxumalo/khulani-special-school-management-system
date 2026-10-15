@@ -18,6 +18,8 @@ public class LearnerResponseDto
     public string? GuardianPhone { get; set; }
     public string? GuardianEmail { get; set; }
     public int HealthIncidentCount { get; set; }
+    public Guid? AssignedTeacherId { get; set; }
+public string? AssignedTeacherName { get; set; }
     public DateTime CreatedAt { get; set; }
 
     private static int CalculateAge(DateTime dob)
